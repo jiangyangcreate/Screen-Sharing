@@ -19,6 +19,7 @@ class Audio:
             input_device_index=1,
             frames_per_buffer=self.CHUNK,
         )
+        self.get_audio = self._get_audio_first_time
 
     def genHeader(self, sampleRate, bitsPerSample, channels):
         datasize = 2000 * 10**6
@@ -37,9 +38,10 @@ class Audio:
         o += (datasize).to_bytes(4, "little")
         return o
 
-    def get_audio(self):
+    def _get_audio_first_time(self):
         data = self.stream.read(self.CHUNK)
-        if self.first_run:
-            self.first_run = False
-            return self.wav_header + data
-        return data
+        self.get_audio = self._get_audio_subsequent_times  # switch the method
+        return self.wav_header + data
+
+    def _get_audio_subsequent_times(self):
+        return self.stream.read(self.CHUNK)
